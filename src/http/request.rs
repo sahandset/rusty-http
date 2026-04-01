@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+#[derive(Debug)]
 pub enum Method {
     POST,
     GET,
@@ -7,7 +8,7 @@ pub enum Method {
     DELETE,
     UNKNOWN,
 }
-
+#[derive(Debug)]
 pub struct HttpRequest {
     pub method: Method,
     pub path: String,
@@ -16,8 +17,6 @@ pub struct HttpRequest {
     pub body: String,
 }
 
-// Need to clean this up -- curently parsing & splitting request from buffer incorrectly
-
 impl HttpRequest {
     pub fn handle_request(buffer: &[u8]) -> HttpRequest {
         let req_string = String::from_utf8_lossy(buffer);
@@ -25,6 +24,10 @@ impl HttpRequest {
         let method_path_version = req_components_by_line[0]
             .splitn(3, ' ')
             .collect::<Vec<&str>>();
+        let headers_ending_idx = req_components_by_line
+            .iter()
+            .position(|line| line.is_empty())
+            .unwrap();
         HttpRequest {
             method: match method_path_version[0] {
                 "POST" => Method::POST,
@@ -35,13 +38,16 @@ impl HttpRequest {
             },
             path: method_path_version[1].to_string(),
             http_version: method_path_version[2].to_string(),
-            headers: Self::parse_headers(&req_components_by_line[3]),
-            body: req_components_by_line[4].to_string(),
+            headers: Self::parse_headers(&req_components_by_line[1..headers_ending_idx]),
+            body: req_components_by_line[headers_ending_idx + 1..]
+                .join("\r\n")
+                .trim_matches('\0')
+                .to_string(),
         }
     }
-    fn parse_headers(header_string: &str) -> HashMap<String, String> {
+    fn parse_headers(header_string: &[&str]) -> HashMap<String, String> {
         header_string
-            .lines()
+            .iter()
             .filter(|line| !line.is_empty())
             .filter_map(|line| {
                 let mut split = line.splitn(2, ':');
