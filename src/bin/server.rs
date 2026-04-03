@@ -4,7 +4,7 @@ use std::{
     net::TcpListener,
 };
 
-use rusty_http::http::HttpRequest;
+use rusty_http::http::{HttpRequest, HttpResponse};
 
 const ADDR: &str = "127.0.0.1";
 
@@ -25,8 +25,8 @@ fn main() {
                     Ok(_n) => {
                         let req = HttpRequest::handle_request(&mut buffer);
                         println!("{:#?}", req);
-                        let response: &str = "HTTP/1.1 200 OK\r\n\r\nHello\n";
-                        stream.write_all(response.as_bytes()).unwrap();
+                        let res = HttpResponse::handle_response();
+                        stream.write_all(&res.to_bytes()).unwrap();
                     }
                     Err(_) => {
                         panic!("Error reading in to buffer")

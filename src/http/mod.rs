@@ -1,4 +1,5 @@
 pub mod request;
+pub mod response;
 
 pub use request::HttpRequest;
-pub use request::Method;
+pub use response::HttpResponse;
