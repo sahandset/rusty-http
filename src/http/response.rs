@@ -8,14 +8,12 @@ pub struct HttpResponse {
 }
 
 impl HttpResponse {
-    pub fn handle_response() -> HttpResponse {
-        let body = String::from("Hello");
-        let headers = HashMap::from([("Content-Length".to_string(), body.len().to_string())]);
+    pub fn new(status_code: u16, status_text: String, headers: HashMap<String, String>, body: String) -> HttpResponse {
         HttpResponse {
-            status_code: 200,
-            status_text: "Ok".to_string(),
+            status_code: status_code,
+            status_text: status_text,
             headers: headers,
-            body: body,
+            body: body
         }
     }
 
