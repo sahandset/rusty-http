@@ -8,12 +8,17 @@ pub struct HttpResponse {
 }
 
 impl HttpResponse {
-    pub fn new(status_code: u16, status_text: String, headers: HashMap<String, String>, body: String) -> HttpResponse {
+    pub fn new(
+        status_code: u16,
+        status_text: String,
+        headers: HashMap<String, String>,
+        body: String,
+    ) -> HttpResponse {
         HttpResponse {
             status_code: status_code,
             status_text: status_text,
             headers: headers,
-            body: body
+            body: body,
         }
     }
 

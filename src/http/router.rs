@@ -2,10 +2,10 @@ use std::collections::HashMap;
 
 use crate::http::{HttpRequest, HttpResponse, request::Method};
 
-pub type Handler = fn(&HttpRequest) -> HttpResponse;
-
+pub type Handler = fn(request: &HttpRequest) -> HttpResponse;
+pub type Route = (Method, String, Handler);
 pub struct Router {
-    routes: Vec<(Method, String, Handler)>,
+    routes: Vec<Route>,
 }
 
 impl Router {
@@ -17,44 +17,19 @@ impl Router {
         self.routes.push((method, path, handler));
     }
 
-    pub fn match_route(&self, request: HttpRequest) -> HttpResponse {
-        match request.path.as_str() {
-            "/" => {
-                let body = String::from("Welcome to rusty-http!");
-                HttpResponse::new(
-                    200,
-                    String::from("OK"),
-                    HashMap::from([("Content-Length".to_string(), body.len().to_string())]),
-                    body,
-                )
-            }
-            "/about" => {
-                let body = String::from("A lightweight HTTP Server...");
-                HttpResponse::new(
-                    200,
-                    String::from("OK"),
-                    HashMap::from([("Content-Length".to_string(), body.len().to_string())]),
-                    body,
-                )
-            }
-            "/echo" => {
-                let body = String::from(request.body);
-                HttpResponse::new(
-                    200,
-                    String::from("OK"),
-                    HashMap::from([("Content-Length".to_string(), body.len().to_string())]),
-                    body,
-                )
-            }
-            _ => {
-                let body = String::from("That endpoint does not exist!");
-                HttpResponse::new(
-                    404,
-                    String::from("Not Found"),
-                    HashMap::from([("Content-Length".to_string(), body.len().to_string())]),
-                    body,
-                )
-            }
+    pub fn match_route(&self, request: &HttpRequest) -> HttpResponse {
+        let req_route = self
+            .routes
+            .iter()
+            .find(|(method, path, _)| *method == request.method && *path == request.path);
+        match &req_route {
+            Some((_, _, handler)) => handler(request),
+            None => HttpResponse::new(
+                404,
+                String::from("Not Found"),
+                HashMap::new(),
+                String::from("404 Not Found"),
+            ),
         }
     }
 }

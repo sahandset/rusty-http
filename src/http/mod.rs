@@ -1,8 +1,9 @@
+pub mod handler;
 pub mod request;
 pub mod response;
 pub mod router;
 
+pub use handler::*;
 pub use request::HttpRequest;
 pub use response::HttpResponse;
 pub use router::Router;
-pub use router::Handler;

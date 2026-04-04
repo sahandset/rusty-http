@@ -4,7 +4,7 @@ use std::{
     net::TcpListener,
 };
 
-use rusty_http::http::{HttpRequest, HttpResponse, Router, request::Method};
+use rusty_http::http::{HttpRequest, Router, handler::*, request::Method};
 
 const ADDR: &str = "127.0.0.1";
 
@@ -15,7 +15,7 @@ fn main() {
     }
     let port: &str = &args[1];
     let listener = TcpListener::bind(format!("{ADDR}:{port}")).unwrap();
-    let router = Router::new();
+    let router = register_routes();
     println!("Listening on port {}...", port);
     for stream in listener.incoming() {
         let mut buffer: [u8; 1024] = [0; 1024];
@@ -26,7 +26,7 @@ fn main() {
                     Ok(_n) => {
                         let req = HttpRequest::handle_request(&mut buffer);
                         println!("{:#?}", req);
-                        let res = router.match_route(req);
+                        let res = router.match_route(&req);
                         stream.write_all(&res.to_bytes()).unwrap();
                     }
                     Err(_) => {
@@ -42,8 +42,9 @@ fn main() {
 }
 
 fn register_routes() -> Router {
-    let router = Router::new();
-    router.add_route(Method::GET, "/", home_handler);
-    router.add_route(Method::GET, "/about", about_handler);
-    router.add_route(Method::GET, "/echo", echo_handler);
+    let mut router = Router::new();
+    router.add_route(Method::GET, String::from("/"), home_handler);
+    router.add_route(Method::GET, String::from("/about"), about_handler);
+    router.add_route(Method::POST, String::from("/echo"), echo_handler);
+    router
 }
